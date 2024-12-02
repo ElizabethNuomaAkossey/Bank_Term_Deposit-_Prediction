@@ -1,6 +1,6 @@
  ## Table of content
-1. [Problem Statement](-problem-statement)
-2. [Objective](https://github.com/ElizabethNuomaAkossey/Bank_Term_Deposit-_Prediction/new/main?readme=1#2-objective)
+1. [Problem Statement](#1-problem-statement)
+2. [Objective](#2-objective)
 ## 1. Problem Statement
 Manually determining whether a customer will agree to a term deposit is a complex and time-consuming process, especially when dealing with a large and diverse customer base. This challenge arises from the wide variety of customer profiles and the difficulty in identifying patterns in such data without advanced tools. However, with the development of predictive modeling, the task of assessing the likelihood of a customer subscribing to a term deposit can be streamlined. By leveraging historical customer data, a predictive model can automatically evaluate the probability of subscription based on key features, significantly reducing manual effort and enhancing decision-making.
 ## 2. Objective
