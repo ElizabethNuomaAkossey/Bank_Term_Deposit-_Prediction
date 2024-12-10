@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+from flask import Flask
 
-# Create an instance of FastAPI
-app = FastAPI()
+app = Flask(__name__)
 
-# Define a route for the homepage
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
-print(app)
+@app.route('/')
+def home():
+    return "Hello, world!"
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
