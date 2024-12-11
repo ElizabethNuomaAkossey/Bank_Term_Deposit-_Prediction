@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import classification_report, f1_score, confusion_matrix
 import pickle
 import os
 
@@ -12,6 +13,10 @@ def train_and_save_model():
         df = pd.read_csv('bank-additional-full.csv', sep=';')
         print("Dataset loaded successfully!")
         print(f"Dataset shape: {df.shape}")
+        
+        # Print class distribution
+        print("\nTarget variable distribution:")
+        print(df['y'].value_counts(normalize=True))
     except FileNotFoundError:
         print("Error: Dataset not found. Please ensure the dataset is in the correct location.")
         return False
@@ -70,11 +75,17 @@ def train_and_save_model():
     print(X.dtypes)
 
     # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     # Train the model
-    print("\nTraining the model...")
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    print("\nTraining XGBoost model...")
+    model = XGBClassifier(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=5,
+        random_state=42,
+        scale_pos_weight=len(y[y==0])/len(y[y==1])  # Handle class imbalance
+    )
     model.fit(X_train, y_train)
 
     # Create models directory if it doesn't exist
@@ -91,20 +102,38 @@ def train_and_save_model():
 
     print("\nModel and encoders have been trained and saved successfully!")
     
-    # Print model performance
-    train_score = model.score(X_train, y_train)
-    test_score = model.score(X_test, y_test)
-    print(f"\nModel Performance:")
-    print(f"Training Score: {train_score:.4f}")
-    print(f"Testing Score: {test_score:.4f}")
+    # Make predictions and evaluate
+    y_pred = model.predict(X_test)
+    
+    # Print detailed evaluation metrics
+    print("\nModel Performance:")
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
+    
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+    
+    # Calculate F1 scores
+    f1_train = f1_score(y_train, model.predict(X_train))
+    f1_test = f1_score(y_test, y_pred)
+    
+    print("\nF1 Scores:")
+    print(f"Training F1 Score: {f1_train:.4f}")
+    print(f"Testing F1 Score: {f1_test:.4f}")
+    
+    # Feature importance
+    feature_importance = pd.DataFrame({
+        'feature': X.columns,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    
+    print("\nTop 10 Most Important Features:")
+    print(feature_importance.head(10))
     
     # Save feature names for later use
     feature_names = X.columns.tolist()
     with open('models/feature_names.pkl', 'wb') as f:
         pickle.dump(feature_names, f)
-    
-    print("\nFeature names saved successfully!")
-    print(f"Features used: {feature_names}")
     
     return True
 
